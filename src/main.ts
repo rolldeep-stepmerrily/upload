@@ -2,11 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-import helmet from 'helmet';
-import * as express from 'express';
-import { join } from 'path';
-import expressBasicAuth from 'express-basic-auth';
-import * as fs from 'fs';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
@@ -33,40 +28,24 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  if (isProduction) {
-    app.use(helmet());
-  } else {
-    app.use(express.static(join(__dirname, '..', 'swagger')));
+  const config = new DocumentBuilder()
+    .setTitle('upload test')
+    .setDescription('upload test')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'accessToken')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'refreshToken')
+    .build();
 
-    app.useStaticAssets(join(__dirname, '..', 'swagger'), { prefix: '/swagger/' });
+  const document = SwaggerModule.createDocument(app, config);
 
-    const updateInfo = fs.readFileSync(join(__dirname, '..', 'swagger', 'swagger-info.md'), 'utf8');
-
-    const GUEST_NAME = configService.getOrThrow<string>('GUEST_NAME');
-    const GUEST_PASSWORD = configService.getOrThrow<string>('GUEST_PASSWORD');
-
-    app.use(['/docs', '/docs-json'], expressBasicAuth({ challenge: true, users: { [GUEST_NAME]: GUEST_PASSWORD } }));
-
-    const config = new DocumentBuilder()
-      .setDescription(updateInfo)
-      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'accessToken')
-      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'refreshToken')
-      .build();
-
-    const document = SwaggerModule.createDocument(app, config);
-
-    SwaggerModule.setup('docs', app, document, {
-      swaggerOptions: {
-        defaultModelsExpandDepth: 0,
-        persistAuthorization: true,
-        syntaxHighlight: { theme: 'arta' },
-        tryItOutEnabled: true,
-        tagsSorter: 'alpha',
-      },
-      customJs: '/swagger-dark.js',
-      customCssUrl: '/swagger-dark.css',
-    });
-  }
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: {
+      defaultModelsExpandDepth: 0,
+      persistAuthorization: true,
+      syntaxHighlight: { theme: 'arta' },
+      tryItOutEnabled: true,
+      tagsSorter: 'alpha',
+    },
+  });
 
   const PORT = configService.getOrThrow<number>('PORT');
 
