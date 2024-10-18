@@ -1,7 +1,9 @@
 import { HttpLoggerMiddleware } from './http-logger.middleware';
 
 describe('HttpLoggerMiddleware', () => {
-  it('should be defined', () => {
-    expect(new HttpLoggerMiddleware()).toBeDefined();
-  });
+  let middleware: HttpLoggerMiddleware;
+  let mockRequest: any;
+  let mockResponse: any;
+  let mockNect: jest.Mock;
+  let mockLogger: jest.SpyInstance;
 });

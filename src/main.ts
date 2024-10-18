@@ -28,12 +28,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const config = new DocumentBuilder()
-    .setTitle('upload test')
-    .setDescription('upload test')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'accessToken')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'refreshToken')
-    .build();
+  const config = new DocumentBuilder().setTitle('upload test').setDescription('upload test').build();
 
   const document = SwaggerModule.createDocument(app, config);
 
